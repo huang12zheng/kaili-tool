@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凯丽公式仓位计算器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, #2c3e50, #4a6491);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 25px;
+            border-right: 1px solid #eee;
+        }
+
+        .result-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 25px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a6491;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: #4a6491;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4a6491;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: #4a6491;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 100, 145, 0.1);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(to right, #2c3e50, #4a6491);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .calculate-btn:hover {
+            background: linear-gradient(to right, #4a6491, #2c3e50);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #4a6491;
+        }
+
+        .result-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: #2c3e50;
+            margin: 15px 0;
+        }
+
+        .result-label {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .result-details {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .result-details p {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .result-details span {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .visualization {
+            margin-top: 25px;
+            height: 120px;
+            background-color: #f0f2f5;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .position-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .position-markers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        .marker {
+            position: relative;
+            width: 1px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .marker-value {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .formula-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .formula-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .formula {
+            font-family: 'Courier New', monospace;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 1.1rem;
+            overflow-x: auto;
+        }
+
+        .formula-explanation {
+            margin-top: 15px;
+            line-height: 1.7;
+        }
+
+        .guidelines {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .guideline-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-top: 4px solid #4a6491;
+        }
+
+        .guideline-box h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .guideline-box h4 i {
+            margin-right: 10px;
+            color: #4a6491;
+        }
+
+        .disclaimer {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff8e1;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success {
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> 凯丽公式仓位计算器</h1>
+            <p>根据凯利公式计算最优投资仓位，帮助您在风险与回报之间找到最佳平衡点</p>
+        </header>
+
+        <div class="content">
+            <div class="input-section">
+                <h2 class="section-title"><i class="fas fa-edit"></i> 输入参数</h2>
+
+                <div class="input-group">
+                    <label for="high-price">最高预期价</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-chart-line"></i>
+                        <input type="number" id="high-price" placeholder="请输入预期最高价格" step="0.01" min="0">
+                    </div>
+                    <div class="error" id="high-price-error">最高预期价必须大于当前价格</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="low-price">最低预期价</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-chart-line"></i>
+                        <input type="number" id="low-price" placeholder="请输入预期最低价格" step="0.01" min="0">
+                    </div>
+                    <div class="error" id="low-price-error">最低预期价必须小于当前价格</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="current-price">当前价格</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                        <input type="number" id="current-price" placeholder="请输入当前市场价格" step="0.01" min="0">
+                    </div>
+                    <div class="error" id="current-price-error">当前价格必须在最低和最高预期价之间</div>
+                    <div class="success" id="current-price-success">当前价格输入有效</div>
+                </div>
+
+                <button class="calculate-btn" id="calculate-btn">
+                    <i class="fas fa-calculator"></i> 计算仓位
+                </button>
+
+                <div class="formula-section">
+                    <h3 class="formula-title">凯丽公式</h3>
+                    <div class="formula">
+                        f* = (bp - q) / b = (p(b+1) - 1) / b
+                    </div>
+                    <div class="formula-explanation">
+                        <p>其中：</p>
+                        <p><strong>f*</strong> = 应该投入的资金比例</p>
+                        <p><strong>b</strong> = 盈亏比 (盈利金额 / 亏损金额)</p>
+                        <p><strong>p</strong> = 盈利概率 (此处假设为50%)</p>
+                        <p><strong>q</strong> = 亏损概率 (1 - p)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> 仓位计算结果</h2>
+
+                <div class="result-box">
+                    <div class="result-label">建议仓位比例</div>
+                    <div class="result-value" id="position-result">0%</div>
+
+                    <div class="result-details">
+                        <p>盈亏比 (b): <span id="profit-loss-ratio">0.00</span></p>
+                        <p>预期上涨空间: <span id="upside-potential">0%</span></p>
+                        <p>预期下跌空间: <span id="downside-risk">0%</span></p>
+                        <p>盈亏概率比: <span id="probability-ratio">1:1</span></p>
+                    </div>
+                </div>
+
+                <div class="visualization">
+                    <div class="position-bar" id="position-bar">0%</div>
+                    <div class="position-markers">
+                        <div class="marker">
+                            <div class="marker-value">0%</div>
+                        </div>
+                        <div class="marker">
+                            <div class="marker-value">25%</div>
+                        </div>
+                        <div class="marker">
+                            <div class="marker-value">50%</div>
+                        </div>
+                        <div class="marker">
+                            <div class="marker-value">75%</div>
+                        </div>
+                        <div class="marker">
+                            <div class="marker-value">100%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="guidelines">
+                    <div class="guideline-box">
+                        <h4><i class="fas fa-check-circle"></i> 仓位建议</h4>
+                        <p id="position-advice">请先输入参数并计算仓位</p>
+                    </div>
+
+                    <div class="guideline-box">
+                        <h4><i class="fas fa-lightbulb"></i> 凯丽公式解释</h4>
+                        <p>凯丽公式帮助投资者确定在每次投资中应投入多少资金，以最大化长期回报同时避免破产风险。</p>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <h4><i class="fas fa-exclamation-triangle"></i> 风险提示</h4>
+                    <p>凯丽公式提供理论上的最优仓位，实际投资中应考虑个人风险承受能力、市场波动性等因素。计算结果仅供参考，不构成投资建议。</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>凯丽公式仓位计算器 &copy; 2023 | 本工具仅用于教育目的</p>
+            <p>注意：此计算假设盈利概率为50%，实际市场概率可能不同</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取DOM元素
+            const highPriceInput = document.getElementById('high-price');
+            const lowPriceInput = document.getElementById('low-price');
+            const currentPriceInput = document.getElementById('current-price');
+            const calculateBtn = document.getElementById('calculate-btn');
+
+            const highPriceError = document.getElementById('high-price-error');
+            const lowPriceError = document.getElementById('low-price-error');
+            const currentPriceError = document.getElementById('current-price-error');
+            const currentPriceSuccess = document.getElementById('current-price-success');
+
+            const positionResult = document.getElementById('position-result');
+            const profitLossRatio = document.getElementById('profit-loss-ratio');
+            const upsidePotential = document.getElementById('upside-potential');
+            const downsideRisk = document.getElementById('downside-risk');
+            const probabilityRatio = document.getElementById('probability-ratio');
+            const positionBar = document.getElementById('position-bar');
+            const positionAdvice = document.getElementById('position-advice');
+
+            // 验证输入
+            function validateInputs() {
+                let isValid = true;
+
+                const highPrice = parseFloat(highPriceInput.value);
+                const lowPrice = parseFloat(lowPriceInput.value);
+                const currentPrice = parseFloat(currentPriceInput.value);
+
+                // 重置错误和成功消息
+                highPriceError.style.display = 'none';
+                lowPriceError.style.display = 'none';
+                currentPriceError.style.display = 'none';
+                currentPriceSuccess.style.display = 'none';
+
+                // 检查是否有输入
+                if (isNaN(highPrice) || isNaN(lowPrice) || isNaN(currentPrice)) {
+                    return false;
+                }
+
+                // 验证最高预期价必须大于当前价格
+                if (highPrice <= currentPrice) {
+                    highPriceError.style.display = 'block';
+                    isValid = false;
+                }
+
+                // 验证最低预期价必须小于当前价格
+                if (lowPrice >= currentPrice) {
+                    lowPriceError.style.display = 'block';
+                    isValid = false;
+                }
+
+                // 验证当前价格必须在最低和最高预期价之间
+                if (currentPrice <= lowPrice || currentPrice >= highPrice) {
+                    currentPriceError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    currentPriceSuccess.style.display = 'block';
+                }
+
+                return isValid;
+            }
+
+            // 计算凯丽公式仓位
+            function calculateKellyPosition() {
+                if (!validateInputs()) {
+                    return;
+                }
+
+                const highPrice = parseFloat(highPriceInput.value);
+                const lowPrice = parseFloat(lowPriceInput.value);
+                const currentPrice = parseFloat(currentPriceInput.value);
+
+                // 计算盈亏比 (b)
+                // 盈利金额 = 最高价 - 当前价
+                // 亏损金额 = 当前价 - 最低价
+                const profitAmount = highPrice - currentPrice;
+                const lossAmount = currentPrice - lowPrice;
+                const b = profitAmount / lossAmount;
+
+                // 假设盈利概率为50% (p = 0.5)
+                const p = 0.5;
+                const q = 1 - p;
+
+                // 计算凯丽公式仓位 f* = (bp - q) / b
+                const f = (b * p - q) / b;
+
+                // 仓位不能为负数，也不能超过100%
+                let position = Math.max(0, f);
+                position = Math.min(position, 1); // 最大仓位为100%
+
+                // 计算预期上涨和下跌空间百分比
+                const upsidePercent = ((highPrice - currentPrice) / currentPrice * 100).toFixed(2);
+                const downsidePercent = ((currentPrice - lowPrice) / currentPrice * 100).toFixed(2);
+
+                // 更新UI
+                const positionPercent = (position * 100).toFixed(2);
+                positionResult.textContent = `${positionPercent}%`;
+                profitLossRatio.textContent = b.toFixed(2);
+                upsidePotential.textContent = `${upsidePercent}%`;
+                downsideRisk.textContent = `${downsidePercent}%`;
+                probabilityRatio.textContent = "1:1";
+
+                // 更新仓位可视化
+                positionBar.style.width = `${positionPercent}%`;
+                positionBar.textContent = `${positionPercent}%`;
+
+                // 更新仓位建议
+                updatePositionAdvice(position);
+            }
+
+            // 更新仓位建议
+            function updatePositionAdvice(position) {
+                let advice = "";
+
+                if (position === 0) {
+                    advice = "根据凯丽公式，不建议投资。盈亏比或概率不利。";
+                } else if (position < 0.1) {
+                    advice = "建议极小仓位 (小于10%)。风险较高，建议观望。";
+                } else if (position < 0.2) {
+                    advice = "建议较小仓位 (10%-20%)。机会与风险并存。";
+                } else if (position < 0.4) {
+                    advice = "建议中等仓位 (20%-40%)。这是较为合理的投资比例。";
+                } else if (position < 0.6) {
+                    advice = "建议较大仓位 (40%-60%)。机会较好，但请确保风险可控。";
+                } else if (position < 0.8) {
+                    advice = "建议大仓位 (60%-80%)。机会非常好，但风险也相应增加。";
+                } else {
+                    advice = "建议重仓 (80%以上)。极佳机会，但请确保您能承受可能的损失。";
+                }
+
+                positionAdvice.textContent = advice;
+            }
+
+            // 绑定事件监听器
+            calculateBtn.addEventListener('click', calculateKellyPosition);
+
+            // 输入框变化时验证
+            highPriceInput.addEventListener('input', validateInputs);
+            lowPriceInput.addEventListener('input', validateInputs);
+            currentPriceInput.addEventListener('input', validateInputs);
+
+            // 设置示例数据
+            function setExampleData() {
+                highPriceInput.value = "180";
+                lowPriceInput.value = "30";
+                currentPriceInput.value = "62.3";
+                validateInputs();
+                calculateKellyPosition();
+            }
+
+            // 页面加载后自动计算示例数据
+            setExampleData();
+        });
+    </script>
+</body>
+
+</html>
